@@ -1,12 +1,18 @@
 #ifndef HUI_H
 #define HUI_H
 
-const byte IGNORE = 0;
-const byte UNKNOWN = 1;
-const byte PLAY = 2;
-const byte REC = 3;
-const byte STOP = 4;
+#include "midi_stuff.h"
 
-byte read_hui(midiEventPacket_t *data);
+namespace hui {
+    enum Result {
+        unknown,
+        ignore,
+        stop,
+        play,
+        record
+    };
+
+    Result read(midiEventPacket_t *data);
+}
 
 #endif

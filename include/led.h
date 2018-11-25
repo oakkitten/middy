@@ -1,6 +1,10 @@
 #ifndef LED_H
 #define LED_H
 
-void pulse();
+namespace led {
+    void pulse();
+    void on();
+    void off();
+}
 
 #endif

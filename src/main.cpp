@@ -5,69 +5,86 @@
 #include "hui.h"
 #include "midi_stuff.h"
 #include "led.h"
+#include "config.h"
+#include "knob.h"
 
 using namespace ace_button;
+using namespace knob;
 
 ButtonConfig buttonConfig;
-AceButton button1(&buttonConfig);
-AceButton button2(&buttonConfig);
 
-void buttonEventHandler(AceButton* button, uint8_t eventType, uint8_t state) {
-    switch (eventType) {
-        case AceButton::kEventPressed:
-            uint8_t id = button->getId();
-            send_transport(id);
-            break;
-    }
+AceButton *buttons[sizeof(config::BUTTONS)/sizeof(config::BUTTONS[0])];
+Knob *knobs[sizeof(config::KNOBS)/sizeof(config::KNOBS[0])];
+
+bool midi_sent;
+
+void button_handler(AceButton* button, uint8_t eventType, uint8_t state) {
+    if (eventType != AceButton::kEventPressed) return;
+    midi::Transport id = static_cast<midi::Transport>(button->getId());
+    Serial.println(id);
+    midi::send_transport(id);
+    midi_sent = true;
 }
+
+void knob_handler(Knob* knob, int value) {
+    byte midi_value = map(value, 0, 1023, 0, 127);
+    Serial.println(midi_value);
+    midi::send_control_change(config::MIDI_CHANNEL, knob->get_cc(), midi_value);
+    midi_sent = true;
+}
+
+bool led_pulsing = false;
+void process_input() {
+    midiEventPacket_t event = MidiUSB.read();
+    if (event.header != 0) {
+        hui::Result result = hui::read(&event);
+        if (result == hui::Result::unknown) {
+            Serial.print("Received: ");
+            midi::println_event(&event);
+        } 
+        else if (result == hui::Result::play) led::on();
+        else if (result == hui::Result::stop) led::off();
+        led_pulsing = result == hui::Result::record;
+    }
+    if (led_pulsing) led::pulse();
+}
+
+void check_buttons() {
+    for (auto const& button : buttons) button->check();   
+}
+
+void check_knobs() {
+    for (auto const& knob : knobs) knob->check();
+}
+
+///////////////////////////////////////////////////////////////////////////////
 
 void setup() {
     Serial.begin(115200);
-    pinMode(5, OUTPUT);
-    pinMode(7, INPUT_PULLUP);
-    button1.init(7, HIGH, 2);
-    buttonConfig.setEventHandler(buttonEventHandler);
+
+    pinMode(config::LED, OUTPUT);
+
+    int i = 0;
+    for (auto &knob_cc : config::KNOBS) {
+        knobs[i++] = new Knob(knob_cc[0], knob_cc[1]);
+    }
+    Knob::set_handler(knob_handler);
+    
+    i = 0;
+    for (auto &button_transport : config::BUTTONS) {
+        buttons[i] = new AceButton(&buttonConfig);
+        buttons[i]->init(button_transport[0], HIGH, button_transport[1]);
+        pinMode(button_transport[0], INPUT_PULLUP);
+        i++;
+    }
+    buttonConfig.setEventHandler(button_handler);
 }
 
-int old_btn_value = LOW;
-int old_value = 0;
-int old_value_ = 0;
-
-byte state;
-
 void loop() {
-    midiEventPacket_t event = MidiUSB.read();
-    if (event.header != 0) {
-        state = read_hui(&event);
-        Serial.print("Result: ");
-        Serial.println(state);
-        print_midi_event(&event);
-        if (state == PLAY) digitalWrite(5, HIGH);
-        if (state == STOP) digitalWrite(5, LOW);
-    }
-
-    if (state == REC) pulse();
-    
-    button1.check();
-    
-    int value = analogRead(A0);
-    if (abs(value - old_value) > 3) {
-        old_value = value;
-        int midi_value = map(value, 0, 1023, 0, 127);
-        controlChange(0, 7, midi_value);
-        Serial.println(midi_value);
-        MidiUSB.flush();
-    }
-
-    int value_ = analogRead(A9);
-    if (abs(value_ - old_value_) > 3) {
-        old_value_ = value_;
-        int midi_value_ = map(value_, 0, 1023, 0, 127);
-        controlChange(0, 8, midi_value_);
-        Serial.println(midi_value_);
-        MidiUSB.flush();
-    }
-
-    
+    midi_sent = false;
+    process_input();
+    check_buttons();
+    check_knobs();
+    if (midi_sent) MidiUSB.flush();
     delay(1);
 }
