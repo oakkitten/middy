@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <MIDIUSB.h>
-#include "midi_stuff.h"
+#include "midi.h"
 
 namespace midi {
 

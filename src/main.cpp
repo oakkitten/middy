@@ -3,7 +3,7 @@
 #include <MIDIUSB.h>
 
 #include "hui.h"
-#include "midi_stuff.h"
+#include "midi.h"
 #include "led.h"
 #include "config.h"
 #include "knob.h"

@@ -2,7 +2,7 @@
 #define CONFIG_H
 
 #include <Arduino.h>
-#include <midi_stuff.h>
+#include <midi.h>
 
 namespace config {
     // led used for indicating play/rec state

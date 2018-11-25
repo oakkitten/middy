@@ -1,7 +1,7 @@
 #ifndef HUI_H
 #define HUI_H
 
-#include "midi_stuff.h"
+#include "midi.h"
 
 namespace hui {
     enum Result {
