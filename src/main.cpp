@@ -16,21 +16,21 @@ ButtonConfig buttonConfig;
 AceButton *buttons[sizeof(config::BUTTONS)/sizeof(config::BUTTONS[0])];
 Knob *knobs[sizeof(config::KNOBS)/sizeof(config::KNOBS[0])];
 
-bool midi_sent;
-
 void button_handler(AceButton* button, uint8_t eventType, uint8_t state) {
-    if (eventType != AceButton::kEventPressed) return;
-    midi::Transport id = static_cast<midi::Transport>(button->getId());
-    Serial.println(id);
-    midi::send_transport(id);
-    midi_sent = true;
+    if (eventType != AceButton::kEventPressed && eventType != AceButton::kEventReleased) return;
+    bool pressed = eventType == AceButton::kEventPressed;
+    byte id = button->getId();
+
+    if (id & config::TRANSPORT) {
+        if (pressed) midi::send_transport(static_cast<midi::Transport>(~config::TRANSPORT & id));
+    } else {
+        midi::send_control_change(config::MIDI_CHANNEL, id, pressed ? 127 : 0);
+    }
 }
 
 void knob_handler(Knob* knob, int value) {
     byte midi_value = map(value, 0, 1023, 0, 127);
-    Serial.println(midi_value);
     midi::send_control_change(config::MIDI_CHANNEL, knob->get_cc(), midi_value);
-    midi_sent = true;
 }
 
 bool led_pulsing = false;
@@ -64,27 +64,24 @@ void setup() {
 
     pinMode(config::LED, OUTPUT);
 
-    int i = 0;
-    for (auto &knob_cc : config::KNOBS) {
-        knobs[i++] = new Knob(knob_cc[0], knob_cc[1]);
-    }
     Knob::set_handler(knob_handler);
+    int i = 0; for (auto &pin_cc : config::KNOBS) {
+        knobs[i++] = new Knob(pin_cc[0], pin_cc[1]);
+    }
     
-    i = 0;
-    for (auto &button_transport : config::BUTTONS) {
+    buttonConfig.setEventHandler(button_handler);
+    i = 0; for (auto &pin_hilo_id : config::BUTTONS) {
         buttons[i] = new AceButton(&buttonConfig);
-        buttons[i]->init(button_transport[0], HIGH, button_transport[1]);
-        pinMode(button_transport[0], INPUT_PULLUP);
+        buttons[i]->init(pin_hilo_id[0], pin_hilo_id[1], pin_hilo_id[2]);
+        pinMode(pin_hilo_id[0], INPUT_PULLUP);
         i++;
     }
-    buttonConfig.setEventHandler(button_handler);
 }
 
 void loop() {
-    midi_sent = false;
     process_input();
     check_buttons();
     check_knobs();
-    if (midi_sent) MidiUSB.flush();
+    midi::flush();
     delay(1);
 }

@@ -20,7 +20,8 @@ namespace midi {
     void send_control_change(byte channel, byte control, byte value);
     void send_sysex(const uint8_t *data, size_t size);
     void send_transport(Transport id);
-    void println_event(midiEventPacket_t *event);
+    void println_event(const midiEventPacket_t *event);
+    void flush();
 }
 
 #endif

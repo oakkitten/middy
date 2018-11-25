@@ -4,6 +4,8 @@
 
 namespace midi {
 
+bool sent_midi = false;
+
 // First parameter is the event type (0x09 = note on, 0x08 = note off).
 // Second parameter is note-on/note-off, combined with the channel.
 // Channel can be anything between 0-15. Typically reported to the user as 1-16.
@@ -12,11 +14,13 @@ namespace midi {
 void send_note_on(byte channel, byte pitch, byte velocity) {
     midiEventPacket_t noteOn = {0x09, byte(0x90 | channel), pitch, velocity};
     MidiUSB.sendMIDI(noteOn);
+    sent_midi = true;
 }
 
 void send_note_off(byte channel, byte pitch, byte velocity) {
     midiEventPacket_t noteOff = {0x08, byte(0x80 | channel), pitch, velocity};
     MidiUSB.sendMIDI(noteOff);
+    sent_midi = true;
 }
 
 // First parameter is the event type (0x0B = control change).
@@ -26,6 +30,7 @@ void send_note_off(byte channel, byte pitch, byte velocity) {
 void send_control_change(byte channel, byte control, byte value) {
     midiEventPacket_t event = {0x0B, byte(0xB0 | channel), control, value};
     MidiUSB.sendMIDI(event);
+    sent_midi = true;
 }
 
 void send_sysex(const uint8_t *data, size_t size) {
@@ -70,6 +75,11 @@ void send_sysex(const uint8_t *data, size_t size) {
         }
     }
     MidiUSB.write(midiData, midiDataSize);
+    sent_midi = true;
+}
+
+void flush() {
+    if (sent_midi) MidiUSB.flush();
 }
 
 // command DAW to play/stop/etc
@@ -79,7 +89,7 @@ void send_transport(Transport id) {
     send_sysex(mmc, 6);
 }
 
-void println_event(midiEventPacket_t *event) {
+void println_event(const midiEventPacket_t *event) {
     Serial.print(event->header, HEX);
     Serial.print("-");
     Serial.print(event->byte1, HEX);

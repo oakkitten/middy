@@ -15,11 +15,15 @@ namespace config {
         {A1, 8}
     };
 
-    // pin → transport
-    const byte BUTTONS[][2]  = {
-        {7, midi::Transport::play},
-        {8, midi::Transport::stop},
-        {9, midi::Transport::record_strobe}
+    // pin → default release state → transport (with flag) or midi cc
+    const byte TRANSPORT = 0b10000000;
+    const byte BUTTONS[][3] = {
+        {7, HIGH, TRANSPORT | midi::Transport::play},
+        {8, HIGH, TRANSPORT | midi::Transport::stop},
+        {9, HIGH, TRANSPORT | midi::Transport::record_strobe},
+        
+        {4, LOW,  80},
+        {2, HIGH, 81}
     };
 
     // midi
