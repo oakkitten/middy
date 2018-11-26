@@ -3,7 +3,7 @@
 
 namespace button {
 
-const unsigned long DEBOUNCE_DELAY = 50;
+const unsigned long SETTLE_TIME= 50;
 
 Button::ButtonHandler handler = [](Button* button, Event event) {};
 void Button::set_handler(Button::ButtonHandler h) {
@@ -30,22 +30,20 @@ Kind Button::get_kind() {
 }
 
 void Button::check() {
-    int reading = digitalRead(this->pin);
-    if (reading != this->last_reading) {
-        this->last_reading = reading;
-        this->last_reading_change_time = millis();
-        return;
-    }
+    unsigned long current_time = millis();
+    bool reading = digitalRead(this->pin) != this->off_state;
 
-    if (this->last_reading_change_time == 0) return;
-
-    if (millis() - this->last_reading_change_time > DEBOUNCE_DELAY) {
-        bool pressed = reading != this->off_state;
-        if (this->pressed == pressed) return;
-        this->pressed = pressed;
-        this->last_reading_change_time = 0;
+    if (current_time - this->last_reading_change_time < SETTLE_TIME) {
+        // button is settling. in case the reading changed during that time, prolong (restart) settling
+        if (this->last_reading != reading) this->last_reading_change_time = current_time;
+    } else if (reading != this->pressed) {
+        // not settling, and the state of the button changed. fire event and start settling
+        this->last_reading_change_time = current_time;
+        this->pressed = reading;
         this->dispatch_change();
     }
+    
+    this->last_reading = reading;
 }
 
 void Button::dispatch_change() {

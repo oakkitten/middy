@@ -30,7 +30,7 @@ namespace button {
             bool pressed;
             bool toggle_state;
 
-            int last_reading;
+            bool last_reading;
             unsigned long last_reading_change_time;
             
             void dispatch_change();
