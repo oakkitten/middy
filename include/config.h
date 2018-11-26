@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <midi.h>
+#include <button.h>
 
 namespace config {
     // led used for indicating play/rec state
@@ -15,15 +16,15 @@ namespace config {
         {A1, 8}
     };
 
-    // pin → default release state → transport (with flag) or midi cc
-    const byte TRANSPORT = 0b10000000;
-    const byte BUTTONS[][3] = {
-        {7, HIGH, TRANSPORT | midi::Transport::play},
-        {8, HIGH, TRANSPORT | midi::Transport::stop},
-        {9, HIGH, TRANSPORT | midi::Transport::record_strobe},
+    // pin → transport/cc → released button state → button kind
+    const byte BUTTONS[][4] = {
+        {7, midi::Transport::play,          HIGH, button::Kind::click},
+        {8, midi::Transport::stop,          HIGH, button::Kind::click},
+        {9, midi::Transport::record_strobe, HIGH, button::Kind::click},
         
-        {4, LOW,  80},
-        {2, HIGH, 81}
+        {2, 80,                             LOW,  button::Kind::toggle},
+        {3, 81,                             HIGH, button::Kind::toggle},
+        {4, 82,                             HIGH, button::Kind::push}
     };
 
     // midi

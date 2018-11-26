@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include <AceButton.h>
 #include <MIDIUSB.h>
 
 #include "hui.h"
@@ -7,24 +6,23 @@
 #include "led.h"
 #include "config.h"
 #include "knob.h"
+#include "button.h"
 
-using namespace ace_button;
+using namespace button;
 using namespace knob;
 
-ButtonConfig buttonConfig;
-
-AceButton *buttons[sizeof(config::BUTTONS)/sizeof(config::BUTTONS[0])];
+Button *buttons[sizeof(config::BUTTONS)/sizeof(config::BUTTONS[0])];
 Knob *knobs[sizeof(config::KNOBS)/sizeof(config::KNOBS[0])];
 
-void button_handler(AceButton* button, uint8_t eventType, uint8_t state) {
-    if (eventType != AceButton::kEventPressed && eventType != AceButton::kEventReleased) return;
-    bool pressed = eventType == AceButton::kEventPressed;
-    byte id = button->getId();
-
-    if (id & config::TRANSPORT) {
-        if (pressed) midi::send_transport(static_cast<midi::Transport>(~config::TRANSPORT & id));
-    } else {
-        midi::send_control_change(config::MIDI_CHANNEL, id, pressed ? 127 : 0);
+void button_handler(Button* button, Event event) {
+    switch (button->get_kind()) {
+        case push:
+        case toggle:
+            midi::send_control_change(config::MIDI_CHANNEL, button->get_tag(), midi_value(event));
+            break;
+        case click:
+            midi::send_transport(static_cast<midi::Transport>(button->get_tag()));
+            break;
     }
 }
 
@@ -69,12 +67,9 @@ void setup() {
         knobs[i++] = new Knob(pin_cc[0], pin_cc[1]);
     }
     
-    buttonConfig.setEventHandler(button_handler);
-    i = 0; for (auto &pin_hilo_id : config::BUTTONS) {
-        buttons[i] = new AceButton(&buttonConfig);
-        buttons[i]->init(pin_hilo_id[0], pin_hilo_id[1], pin_hilo_id[2]);
-        pinMode(pin_hilo_id[0], INPUT_PULLUP);
-        i++;
+    Button::set_handler(button_handler);
+    i = 0; for (auto &b : config::BUTTONS) {
+        buttons[i++] = new Button(b[0], b[1], b[2], static_cast<Kind>(b[3]));
     }
 }
 
