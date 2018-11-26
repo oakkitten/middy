@@ -5,16 +5,17 @@
 
 namespace knob {
     class Knob {
-        private:
-            byte pin, cc;
-            int old_value = -100;
         public:
+            const byte pin, cc;
+
             explicit Knob(byte pin, byte cc);
-            byte get_cc();
             void check();
 
             typedef void (*KnobHandler)(Knob* knob, int value);
             static void set_handler(Knob::KnobHandler handler);
+
+        private:
+            int old_value;
     };
 }
 

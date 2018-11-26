@@ -23,28 +23,23 @@ namespace button {
     };
 
     class Button {
+        public:
+            const byte pin, tag, off_state;
+            const Kind kind;
+
+            explicit Button(byte pin, byte tag, byte off_state, Kind kind);
+            void check();
+
+            typedef void (*ButtonHandler)(Button* button, Event event);
+            static void set_handler(Button::ButtonHandler handler);
+        
         private:
-            byte pin, tag, off_state;
-            Kind kind;
-            
-            bool pressed;
-            bool toggle_state;
+            bool pressed, toggle_state;
 
             bool last_reading;
             unsigned long last_reading_change_time;
             
             void dispatch_change();
-
-        public:
-            explicit Button(byte pin, byte tag, byte off_state, Kind kind);
-            byte get_tag();
-            Kind get_kind();
-            void check();
-
-            typedef void (*ButtonHandler)(Button* button, Event event);
-            static void set_handler(Button::ButtonHandler handler);
-
-
     };
 }
 

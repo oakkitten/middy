@@ -15,20 +15,20 @@ Button *buttons[sizeof(config::BUTTONS)/sizeof(config::BUTTONS[0])];
 Knob *knobs[sizeof(config::KNOBS)/sizeof(config::KNOBS[0])];
 
 void button_handler(Button* button, Event event) {
-    switch (button->get_kind()) {
+    switch (button->kind) {
         case push:
         case toggle:
-            midi::send_control_change(config::MIDI_CHANNEL, button->get_tag(), midi_value(event));
+            midi::send_control_change(config::MIDI_CHANNEL, button->tag, midi_value(event));
             break;
         case click:
-            midi::send_transport(static_cast<midi::Transport>(button->get_tag()));
+            midi::send_transport(static_cast<midi::Transport>(button->tag));
             break;
     }
 }
 
 void knob_handler(Knob* knob, int value) {
     byte midi_value = map(value, 0, 1023, 0, 127);
-    midi::send_control_change(config::MIDI_CHANNEL, knob->get_cc(), midi_value);
+    midi::send_control_change(config::MIDI_CHANNEL, knob->cc, midi_value);
 }
 
 bool led_pulsing = false;

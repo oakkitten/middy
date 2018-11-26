@@ -10,13 +10,8 @@ void Knob::set_handler(Knob::KnobHandler h) {
     handler = h;
 }
 
-Knob::Knob(byte pin, byte cc) {
-    this->pin = pin;
-    this->cc = cc;
-}
-
-byte Knob::get_cc() {
-    return this->cc;
+Knob::Knob(byte pin, byte cc) : pin(pin), cc(cc) {
+    this->old_value = -100;
 }
 
 // don't emit change if value has changed only slightly, but snap to the ends—0 or 1023
