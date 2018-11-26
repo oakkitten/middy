@@ -14,13 +14,13 @@ using namespace knob;
 Button *buttons[sizeof(config::BUTTONS)/sizeof(config::BUTTONS[0])];
 Knob *knobs[sizeof(config::KNOBS)/sizeof(config::KNOBS[0])];
 
-void button_handler(Button* button, Event event) {
+void button_handler(Button* button, Button::Event event) {
     switch (button->kind) {
-        case push:
-        case toggle:
-            midi::send_control_change(config::MIDI_CHANNEL, button->tag, midi_value(event));
+        case Button::Kind::push:
+        case Button::Kind::toggle:
+            midi::send_control_change(config::MIDI_CHANNEL, button->tag, Button::midi_value(event));
             break;
-        case click:
+        case Button::Kind::click:
             midi::send_transport(static_cast<midi::Transport>(button->tag));
             break;
     }
@@ -63,13 +63,13 @@ void setup() {
     pinMode(config::LED, OUTPUT);
 
     Knob::set_handler(knob_handler);
-    int i = 0; for (auto &pin_cc : config::KNOBS) {
-        knobs[i++] = new Knob(pin_cc[0], pin_cc[1]);
+    int i = 0; for (auto &k : config::KNOBS) {
+        knobs[i++] = new Knob(k.pin, k.cc);
     }
     
     Button::set_handler(button_handler);
     i = 0; for (auto &b : config::BUTTONS) {
-        buttons[i++] = new Button(b[0], b[1], b[2], static_cast<Kind>(b[3]));
+        buttons[i++] = new Button(b.pin, b.tag, b.off_state, b.kind);
     }
 }
 

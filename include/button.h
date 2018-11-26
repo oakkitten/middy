@@ -4,26 +4,26 @@
 #include <Arduino.h>
 
 namespace button {
-    enum Kind {
-        toggle,
-        push,
-        click,
-    };
-
-    enum class Event : byte {
-        press = 127,
-        release = 0,
-        click = 64,
-        toggle_on = 126,
-        toggle_off = 1
-    };
-
-    inline byte midi_value(Event e) {
-        return static_cast<byte>(e) >= 64 ? 127 : 0;
-    };
-
     class Button {
         public:
+            enum class Kind {
+                toggle,
+                push,
+                click,
+            };
+
+            enum class Event : byte {
+                press = 127,
+                release = 0,
+                click = 64,
+                toggle_on = 126,
+                toggle_off = 1
+            };
+
+            inline static byte midi_value(Event e) {
+                return static_cast<byte>(e) >= 64 ? 127 : 0;
+            };
+
             const byte pin, tag, off_state;
             const Kind kind;
 

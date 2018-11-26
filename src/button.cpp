@@ -5,7 +5,7 @@ namespace button {
 
 const unsigned long SETTLE_TIME= 50;
 
-Button::ButtonHandler handler = [](Button* button, Event event) {};
+Button::ButtonHandler handler = [](Button* button, Button::Event event) {};
 void Button::set_handler(Button::ButtonHandler h) {
     handler = h;
 }
