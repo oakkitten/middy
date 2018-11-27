@@ -14,7 +14,7 @@ Result next(byte b) {
     return result;
 }
 
-Result read(midiEventPacket_t *data) {
+Result read(const midiEventPacket_t *data) {
     if (data->header == 0x0b && data->byte1 == 0xb0 && data->byte2 == 0x0c && data->byte3 == 0x0e) return Result::ignore;
     if (data->header != 0x0b || data->byte1 != 0xb0 || data->byte2 != 0x2c) return Result::unknown;
 

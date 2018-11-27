@@ -3,10 +3,10 @@
 
 namespace button {
 
-const unsigned long SETTLE_TIME= 50;
+const unsigned long SETTLE_TIME = 50;
 
-Button::ButtonHandler handler = [](Button* button, Button::Event event) {};
-void Button::set_handler(Button::ButtonHandler h) {
+Button::Handler handler = [](const Button* button, Button::Event event) {};
+void Button::set_handler(Button::Handler h) {
     handler = h;
 }
 

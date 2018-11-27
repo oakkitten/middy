@@ -6,6 +6,7 @@ namespace midi {
 
 bool sent_midi = false;
 
+// https://github.com/arduino-libraries/MIDIUSB/blob/master/examples/MIDIUSB_loop/MIDIUSB_loop.ino
 // First parameter is the event type (0x09 = note on, 0x08 = note off).
 // Second parameter is note-on/note-off, combined with the channel.
 // Channel can be anything between 0-15. Typically reported to the user as 1-16.
@@ -33,6 +34,7 @@ void send_control_change(byte channel, byte control, byte value) {
     sent_midi = true;
 }
 
+// https://github.com/arduino-libraries/MIDIUSB/issues/19#issuecomment-252320075
 void send_sysex(const uint8_t *data, size_t size) {
     if (data == NULL || size == 0) return;
 
@@ -80,10 +82,9 @@ void send_sysex(const uint8_t *data, size_t size) {
 
 void flush() {
     if (sent_midi) MidiUSB.flush();
+    sent_midi = false;
 }
 
-// command DAW to play/stop/etc
-// https://en.wikipedia.org/wiki/MIDI_Machine_Control#MIDI_Universal_Real_Time_SysEx_Message_Format
 void send_transport(Transport id) {
     uint8_t mmc[6] = {0xf0, 0x7f, 0x7f, 0x06, id, 0xf7};
     send_sysex(mmc, 6);

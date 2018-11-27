@@ -5,6 +5,7 @@
 #include <MIDIUSB.h>
 
 namespace midi {
+    // https://en.wikipedia.org/wiki/MIDI_Machine_Control
     enum Transport {
         stop = 1,
         play = 2,

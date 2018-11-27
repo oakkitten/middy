@@ -30,8 +30,8 @@ namespace button {
             explicit Button(byte pin, byte tag, byte off_state, Kind kind);
             void check();
 
-            typedef void (*ButtonHandler)(Button* button, Event event);
-            static void set_handler(Button::ButtonHandler handler);
+            typedef void (*Handler)(const Button* button, Event event);
+            static void set_handler(Button::Handler handler);
         
         private:
             bool pressed, toggle_state;

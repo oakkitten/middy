@@ -5,8 +5,8 @@ namespace knob {
 
 const int THRESHOLD = 3;
 
-Knob::KnobHandler handler = [](Knob* knob, int value) {};
-void Knob::set_handler(Knob::KnobHandler h) {
+Knob::Handler handler = [](const Knob* knob, int value) {};
+void Knob::set_handler(Knob::Handler h) {
     handler = h;
 }
 

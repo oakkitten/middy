@@ -11,8 +11,8 @@ namespace knob {
             explicit Knob(byte pin, byte cc);
             void check();
 
-            typedef void (*KnobHandler)(Knob* knob, int value);
-            static void set_handler(Knob::KnobHandler handler);
+            typedef void (*Handler)(const Knob* knob, int value);
+            static void set_handler(Knob::Handler handler);
 
         private:
             int old_value;

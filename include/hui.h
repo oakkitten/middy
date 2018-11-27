@@ -4,7 +4,7 @@
 #include "midi.h"
 
 namespace hui {
-    enum Result {
+    enum class Result {
         unknown,
         ignore,
         stop,
@@ -12,7 +12,7 @@ namespace hui {
         record
     };
 
-    Result read(midiEventPacket_t *data);
+    Result read(const midiEventPacket_t *data);
 }
 
 #endif

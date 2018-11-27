@@ -14,7 +14,7 @@ using namespace knob;
 Button *buttons[sizeof(config::BUTTONS)/sizeof(config::BUTTONS[0])];
 Knob *knobs[sizeof(config::KNOBS)/sizeof(config::KNOBS[0])];
 
-void button_handler(Button* button, Button::Event event) {
+void button_handler(const Button* button, Button::Event event) {
     switch (button->kind) {
         case Button::Kind::push:
         case Button::Kind::toggle:
@@ -26,7 +26,7 @@ void button_handler(Button* button, Button::Event event) {
     }
 }
 
-void knob_handler(Knob* knob, int value) {
+void knob_handler(const Knob* knob, int value) {
     byte midi_value = map(value, 0, 1023, 0, 127);
     midi::send_control_change(config::MIDI_CHANNEL, knob->cc, midi_value);
 }
@@ -48,11 +48,11 @@ void process_input() {
 }
 
 void check_buttons() {
-    for (auto const& button : buttons) button->check();   
+    for (auto &button : buttons) button->check();   
 }
 
 void check_knobs() {
-    for (auto const& knob : knobs) knob->check();
+    for (auto &knob : knobs) knob->check();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
